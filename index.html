@@ -274,243 +274,243 @@
 
   <canvas id="canvas"></canvas>
 
-  <script>
-    let originalFile;
-    let originalImage = new Image();
+<script>
+  let originalFile;
+  let originalImage = new Image();
 
-    const sizeSelect = document.getElementById('size-select');
-    const widthInput = document.getElementById('custom-width');
-    const heightInput = document.getElementById('custom-height');
+  const sizeSelect = document.getElementById('size-select');
+  const widthInput = document.getElementById('custom-width');
+  const heightInput = document.getElementById('custom-height');
 
-    const fileInput = document.getElementById('upload');
-    const fileNameDisplay = document.getElementById('file-name');
+  const fileInput = document.getElementById('upload');
+  const fileNameDisplay = document.getElementById('file-name');
 
-    const imgOriginal = document.getElementById('img-original');
-    const imgPreview = document.getElementById('img-preview');
+  const imgOriginal = document.getElementById('img-original');
+  const imgPreview = document.getElementById('img-preview');
 
-    const textOriginal = document.getElementById('text-original');
-    const textPreview = document.getElementById('text-preview');
+  const textOriginal = document.getElementById('text-original');
+  const textPreview = document.getElementById('text-preview');
 
-    const originalInfo = document.getElementById('original-info');
-    const resizedInfo = document.getElementById('resized-info');
+  const originalInfo = document.getElementById('original-info');
+  const resizedInfo = document.getElementById('resized-info');
 
-    const infoOriginalBox = document.getElementById('info-original');
-    const infoResizedBox = document.getElementById('info-resized');
+  const infoOriginalBox = document.getElementById('info-original');
+  const infoResizedBox = document.getElementById('info-resized');
 
-    const presets = {
-      "750x750": [750, 750],
-      "540x300": [540, 300]
-    };
+  const presets = {
+    "750x750": [750, 750],
+    "540x300": [540, 300]
+  };
 
-    // Ẩn hình khi chưa có, hiện text
-    function showOriginalImage(show) {
-      if (show) {
-        imgOriginal.style.display = "block";
-        textOriginal.style.display = "none";
+  function showOriginalImage(show) {
+    imgOriginal.style.display = show ? "block" : "none";
+    textOriginal.style.display = show ? "none" : "block";
+  }
+
+  function showPreviewImage(show) {
+    imgPreview.style.display = show ? "block" : "none";
+    textPreview.style.display = show ? "none" : "block";
+  }
+
+  sizeSelect.addEventListener('change', () => {
+    const value = sizeSelect.value;
+    if (value === "custom") {
+      widthInput.readOnly = false;
+      heightInput.readOnly = false;
+      if (originalImage.src) {
+        widthInput.value = originalImage.width;
+        heightInput.value = originalImage.height;
       } else {
-        imgOriginal.style.display = "none";
-        textOriginal.style.display = "block";
-      }
-    }
-
-    function showPreviewImage(show) {
-      if (show) {
-        imgPreview.style.display = "block";
-        textPreview.style.display = "none";
-      } else {
-        imgPreview.style.display = "none";
-        textPreview.style.display = "block";
-      }
-    }
-
-    sizeSelect.addEventListener('change', () => {
-      const value = sizeSelect.value;
-      if (value === "custom") {
-        widthInput.readOnly = false;
-        heightInput.readOnly = false;
         widthInput.value = "";
         heightInput.value = "";
-      } else {
-        const [w, h] = presets[value];
-        widthInput.value = w;
-        heightInput.value = h;
-        widthInput.readOnly = true;
-        heightInput.readOnly = true;
       }
-      updatePreviewImage();
-    });
+    } else {
+      const [w, h] = presets[value];
+      widthInput.value = w;
+      heightInput.value = h;
+      widthInput.readOnly = true;
+      heightInput.readOnly = true;
+    }
+    updatePreviewImage();
+  });
 
-    fileInput.addEventListener("change", function() {
-      if (this.files[0]) {
-        originalFile = this.files[0];
-        fileNameDisplay.textContent = originalFile.name;
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          originalImage.onload = () => {
-            imgOriginal.onerror = () => {
-              showOriginalImage(false);
-              originalInfo.textContent = "";
-              infoOriginalBox.style.display = "none";
-            };
-
-            imgOriginal.src = originalImage.src;
-            showOriginalImage(true);
-
-            infoOriginalBox.style.display = "block";
-            originalInfo.textContent = 
-              `Tên: ${originalFile.name}\n` +
-              `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
-              `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
-
-            updatePreviewImage();
-          };
-          originalImage.onerror = () => {
-            alert("Ảnh không hợp lệ hoặc không thể tải.");
-            originalFile = null;
-            fileNameDisplay.textContent = "Chưa có ảnh";
-            imgOriginal.src = "";
-            imgPreview.src = "";
+  fileInput.addEventListener("change", function() {
+    if (this.files[0]) {
+      originalFile = this.files[0];
+      fileNameDisplay.textContent = originalFile.name;
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        originalImage.onload = () => {
+          imgOriginal.onerror = () => {
             showOriginalImage(false);
-            showPreviewImage(false);
+            originalInfo.textContent = "";
             infoOriginalBox.style.display = "none";
-            infoResizedBox.style.display = "none";
           };
-          originalImage.src = event.target.result;
+
+          imgOriginal.src = originalImage.src;
+          showOriginalImage(true);
+
+          infoOriginalBox.style.display = "block";
+          originalInfo.textContent = 
+            `Tên: ${originalFile.name}\n` +
+            `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
+            `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+
+          sizeSelect.dispatchEvent(new Event('change'));
         };
-        reader.readAsDataURL(originalFile);
-      } else {
-        fileNameDisplay.textContent = "Chưa có ảnh";
-        imgOriginal.src = "";
-        imgPreview.src = "";
-        showOriginalImage(false);
-        showPreviewImage(false);
-        infoOriginalBox.style.display = "none";
-        infoResizedBox.style.display = "none";
-      }
-    });
-
-    widthInput.addEventListener("input", updatePreviewImage);
-    heightInput.addEventListener("input", updatePreviewImage);
-
-    function updatePreviewImage() {
-      if (!originalImage.src) {
-        showPreviewImage(false);
-        infoResizedBox.style.display = "none";
-        return;
-      }
-
-      const width = parseInt(widthInput.value);
-      const height = parseInt(heightInput.value);
-      if (!width || !height) {
-        showPreviewImage(false);
-        infoResizedBox.style.display = "none";
-        return;
-      }
-
-      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
-
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      if (mode === "stretch") {
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(originalImage, 0, 0, width, height);
-      } else {
-        const ratioW = width / originalImage.width;
-        const ratioH = height / originalImage.height;
-        const scale = Math.max(ratioW, ratioH);
-
-        const scaledW = originalImage.width * scale;
-        const scaledH = originalImage.height * scale;
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const sx = (scaledW - width) / 2 / scale;
-        const sy = (scaledH - height) / 2 / scale;
-
-        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
-      }
-
-      imgPreview.src = canvas.toDataURL("image/jpeg");
-      showPreviewImage(true);
+        originalImage.onerror = () => {
+          alert("Ảnh không hợp lệ hoặc không thể tải.");
+          originalFile = null;
+          fileNameDisplay.textContent = "Chưa có ảnh";
+          imgOriginal.src = "";
+          imgPreview.src = "";
+          showOriginalImage(false);
+          showPreviewImage(false);
+          infoOriginalBox.style.display = "none";
+          infoResizedBox.style.display = "none";
+        };
+        originalImage.src = event.target.result;
+      };
+      reader.readAsDataURL(originalFile);
+    } else {
+      fileNameDisplay.textContent = "Chưa có ảnh";
+      imgOriginal.src = "";
+      imgPreview.src = "";
+      showOriginalImage(false);
+      showPreviewImage(false);
+      infoOriginalBox.style.display = "none";
       infoResizedBox.style.display = "none";
     }
+  });
 
-    function resizeImage() {
-      if (!originalFile) return alert("Hãy chọn một ảnh.");
+  widthInput.addEventListener("input", updatePreviewImage);
+  heightInput.addEventListener("input", updatePreviewImage);
 
-      const width = parseInt(widthInput.value);
-      const height = parseInt(heightInput.value);
-      if (!width || !height) return alert("Nhập kích thước hợp lệ.");
-
-      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
-
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-
-      if (mode === "stretch") {
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(originalImage, 0, 0, width, height);
-        compressAndDownload(canvas, width, height);
-      } else {
-        const ratioW = width / originalImage.width;
-        const ratioH = height / originalImage.height;
-        const scale = Math.max(ratioW, ratioH);
-
-        const scaledW = originalImage.width * scale;
-        const scaledH = originalImage.height * scale;
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const sx = (scaledW - width) / 2 / scale;
-        const sy = (scaledH - height) / 2 / scale;
-
-        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
-        compressAndDownload(canvas, width, height);
-      }
+  function updatePreviewImage() {
+    if (!originalImage.src) {
+      showPreviewImage(false);
+      infoResizedBox.style.display = "none";
+      return;
     }
 
-    function compressAndDownload(canvas, width, height) {
-      const originalName = originalFile.name;
-      const baseName = originalName.replace(/\.[^/.]+$/, "");
-      const resizedName = `${baseName}_${width}x${height}.jpeg`;
-
-      let quality = 0.92;
-
-      function tryCompress() {
-        canvas.toBlob(function(blob) {
-          if (blob.size <= 500 * 1024 || quality < 0.1) {
-            resizedInfo.textContent = 
-              `Tên: ${resizedName}\n` +
-              `Kích thước mới: ${width}x${height}px\n` +
-              `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
-            infoResizedBox.style.display = "block";
-
-            imgPreview.src = URL.createObjectURL(blob);
-            showPreviewImage(true);
-
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = resizedName;
-            a.click();
-          } else {
-            quality -= 0.05;
-            tryCompress();
-          }
-        }, 'image/jpeg', quality);
-      }
-
-      tryCompress();
+    const width = parseInt(widthInput.value);
+    const height = parseInt(heightInput.value);
+    if (!width || !height) {
+      showPreviewImage(false);
+      infoResizedBox.style.display = "none";
+      return;
     }
 
-    // Khởi tạo
-    sizeSelect.dispatchEvent(new Event('change'));
-    showOriginalImage(false);
-    showPreviewImage(false);
-  </script>
+    const mode = document.querySelector('input[name="resizeMode"]:checked').value;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (mode === "stretch") {
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(originalImage, 0, 0, width, height);
+    } else {
+      const ratioW = width / originalImage.width;
+      const ratioH = height / originalImage.height;
+      const scale = Math.max(ratioW, ratioH);
+
+      const scaledW = originalImage.width * scale;
+      const scaledH = originalImage.height * scale;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const sx = (scaledW - width) / 2 / scale;
+      const sy = (scaledH - height) / 2 / scale;
+
+      ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+    }
+
+    canvas.toBlob(function(blob) {
+      resizedInfo.textContent =
+        `Tên: Xem trước\n` +
+        `Kích thước mới: ${width}x${height}px\n` +
+        `Dung lượng ước tính: ${(blob.size / 1024).toFixed(1)} KB`;
+      infoResizedBox.style.display = "block";
+
+      imgPreview.src = URL.createObjectURL(blob);
+      showPreviewImage(true);
+    }, 'image/jpeg', 0.92);
+  }
+
+  function resizeImage() {
+    if (!originalFile) return alert("Hãy chọn một ảnh.");
+
+    const width = parseInt(widthInput.value);
+    const height = parseInt(heightInput.value);
+    if (!width || !height) return alert("Nhập kích thước hợp lệ.");
+
+    const mode = document.querySelector('input[name="resizeMode"]:checked').value;
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (mode === "stretch") {
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(originalImage, 0, 0, width, height);
+      compressAndDownload(canvas, width, height);
+    } else {
+      const ratioW = width / originalImage.width;
+      const ratioH = height / originalImage.height;
+      const scale = Math.max(ratioW, ratioH);
+
+      const scaledW = originalImage.width * scale;
+      const scaledH = originalImage.height * scale;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const sx = (scaledW - width) / 2 / scale;
+      const sy = (scaledH - height) / 2 / scale;
+
+      ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+      compressAndDownload(canvas, width, height);
+    }
+  }
+
+  function compressAndDownload(canvas, width, height) {
+    const originalName = originalFile.name;
+    const baseName = originalName.replace(/\.[^/.]+$/, "");
+    const resizedName = `${baseName}_${width}x${height}.jpeg`;
+
+    let quality = 0.92;
+
+    function tryCompress() {
+      canvas.toBlob(function(blob) {
+        if (blob.size <= 500 * 1024 || quality < 0.1) {
+          resizedInfo.textContent = 
+            `Tên: ${resizedName}\n` +
+            `Kích thước mới: ${width}x${height}px\n` +
+            `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
+          infoResizedBox.style.display = "block";
+
+          imgPreview.src = URL.createObjectURL(blob);
+          showPreviewImage(true);
+
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = resizedName;
+          a.click();
+        } else {
+          quality -= 0.05;
+          tryCompress();
+        }
+      }, 'image/jpeg', quality);
+    }
+
+    tryCompress();
+  }
+
+  // Init
+  sizeSelect.dispatchEvent(new Event('change'));
+  showOriginalImage(false);
+  showPreviewImage(false);
+</script>
+
 </body>
 </html>
