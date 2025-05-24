@@ -3,38 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Danger Tech Image Resizer</title>
+  <title>Image Resizer Tool</title>
   <style>
     body {
-      background: #0f0f0f;
-      font-family: 'Courier New', monospace;
-      color: #0ff;
+      background: #f0f2f5;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
     }
 
     h1 {
-      color: #f00;
-      text-shadow: 0 0 5px red;
+      color: #1877f2;
+      margin-bottom: 20px;
     }
 
     .container {
-      background: #111;
-      padding: 20px;
-      border: 1px solid #0ff;
-      border-radius: 8px;
-      box-shadow: 0 0 15px #0ff;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
     }
 
-    input, button, select {
-      margin: 10px 0;
-      padding: 8px;
-      background: #222;
-      color: #0f0;
-      border: 1px solid #0f0;
-      font-family: inherit;
+    input[type="file"], select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0 20px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    button {
+      display: block;
+      margin: 20px auto 0;
+      padding: 12px 24px;
+      background-color: #1877f2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(24, 119, 242, 0.3);
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #155fc9;
+    }
+
+    .info-box {
+      font-size: 14px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-left: 4px solid #1877f2;
+      margin-top: 20px;
+      border-radius: 4px;
+      word-break: break-word;
+    }
+
+    .info-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #444;
     }
 
     canvas {
@@ -43,25 +78,48 @@
   </style>
 </head>
 <body>
-  <h1>⚠️ Image Resizer v1.0</h1>
+  <h1>🖼 Image Resizer</h1>
   <div class="container">
     <input type="file" id="upload" accept="image/*" />
-    <br/>
-    Kích thước: 
+    <label for="size-select"><strong>Chọn kích thước:</strong></label>
     <select id="size-select">
       <option value="750x750">750x750</option>
       <option value="530x530">530x530</option>
     </select>
-    <br/>
+
     <button onclick="resizeImage()">Resize & Download</button>
+
+    <div class="info-box" id="info-original" style="display:none;">
+      <div class="info-title">Ảnh gốc:</div>
+      <div id="original-info"></div>
+    </div>
+
+    <div class="info-box" id="info-resized" style="display:none;">
+      <div class="info-title">Ảnh sau khi resize:</div>
+      <div id="resized-info"></div>
+    </div>
+
     <canvas id="canvas"></canvas>
   </div>
 
   <script>
     let originalFile;
+    let originalImage = new Image();
 
     document.getElementById('upload').addEventListener('change', (e) => {
       originalFile = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        originalImage.onload = () => {
+          document.getElementById("info-original").style.display = "block";
+          document.getElementById("original-info").innerText = 
+            `Tên: ${originalFile.name}\n` +
+            `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
+            `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+        };
+        originalImage.src = event.target.result;
+      };
+      reader.readAsDataURL(originalFile);
     });
 
     function resizeImage() {
@@ -70,31 +128,30 @@
       const sizeValue = document.getElementById('size-select').value;
       const [width, height] = sizeValue.split('x').map(Number);
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.getElementById('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = width;
+      canvas.height = height;
 
-          const originalName = originalFile.name;
-          const extension = originalName.split('.').pop();
-          const baseName = originalName.replace(/\.[^/.]+$/, "");
-          const resizedName = `${baseName}_${width}x${height}.${extension}`;
+      ctx.drawImage(originalImage, 0, 0, width, height);
 
-          canvas.toBlob(function(blob) {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = resizedName;
-            a.click();
-          }, originalFile.type);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(originalFile);
+      const originalName = originalFile.name;
+      const extension = originalName.split('.').pop();
+      const baseName = originalName.replace(/\.[^/.]+$/, "");
+      const resizedName = `${baseName}_${width}x${height}.${extension}`;
+
+      canvas.toBlob(function (blob) {
+        document.getElementById("info-resized").style.display = "block";
+        document.getElementById("resized-info").innerText = 
+          `Tên: ${resizedName}\n` +
+          `Kích thước mới: ${width}x${height}px\n` +
+          `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = resizedName;
+        a.click();
+      }, originalFile.type);
     }
   </script>
 </body>
