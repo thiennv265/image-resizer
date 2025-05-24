@@ -80,17 +80,17 @@
     }
 
     .size-options input[type="number"] {
-  width: 30%;
-  padding: 9px;
-  border: 1px solid #1877f2;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #1877f2;
-  background-color: #eef3fb;
-  box-sizing: border-box;
-  text-align: center;
-}
+      width: 30%;
+      padding: 9px;
+      border: 1px solid #1877f2;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #1877f2;
+      background-color: #eef3fb;
+      box-sizing: border-box;
+      text-align: center;
+    }
 
     button {
       display: block;
@@ -220,53 +220,52 @@
       }
     });
 
-    function function resizeImage() {
-  if (!originalFile) return alert("Hãy chọn một ảnh.");
+    function resizeImage() {
+      if (!originalFile) return alert("Hãy chọn một ảnh.");
 
-  const width = parseInt(widthInput.value);
-  const height = parseInt(heightInput.value);
-  if (!width || !height) return alert("Nhập kích thước hợp lệ.");
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      if (!width || !height) return alert("Nhập kích thước hợp lệ.");
 
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = width;
-  canvas.height = height;
-  ctx.drawImage(originalImage, 0, 0, width, height);
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(originalImage, 0, 0, width, height);
 
-  const originalName = originalFile.name;
-  const baseName = originalName.replace(/\.[^/.]+$/, "");
-  const resizedName = `${baseName}_${width}x${height}.jpg`;
+      const originalName = originalFile.name;
+      const baseName = originalName.replace(/\.[^/.]+$/, "");
+      const resizedName = `${baseName}_${width}x${height}.jpg`;
 
-  // Bắt đầu nén ảnh JPEG dần dần
-  let quality = 0.9;
+      let quality = 0.9;
 
-  function tryCompress() {
-    canvas.toBlob(function (blob) {
-      if (blob.size <= 500 * 1024 || quality <= 0.3) {
-        if (blob.size > 500 * 1024) {
-          alert("Không thể nén ảnh dưới 500KB ở chất lượng chấp nhận được. Hãy chọn ảnh nhỏ hơn hoặc giảm kích thước.");
-          return;
-        }
+      function tryCompress() {
+        canvas.toBlob(function (blob) {
+          if (blob.size <= 500 * 1024 || quality <= 0.3) {
+            if (blob.size > 500 * 1024) {
+              alert("Không thể nén ảnh dưới 500KB ở chất lượng chấp nhận được. Hãy chọn ảnh nhỏ hơn hoặc giảm kích thước.");
+              return;
+            }
 
-        document.getElementById("info-resized").style.display = "block";
-        document.getElementById("resized-info").innerText =
-          `Tên: ${resizedName}\n` +
-          `Kích thước mới: ${width}x${height}px\n` +
-          `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
+            document.getElementById("info-resized").style.display = "block";
+            document.getElementById("resized-info").innerText =
+              `Tên: ${resizedName}\n` +
+              `Kích thước mới: ${width}x${height}px\n` +
+              `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
 
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = resizedName;
-        a.click();
-      } else {
-        quality -= 0.05;
-        tryCompress();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = resizedName;
+            a.click();
+          } else {
+            quality -= 0.05;
+            tryCompress();
+          }
+        }, 'image/jpeg', quality);
       }
-    }, 'image/jpeg', quality);
-  }
 
-  tryCompress();
-}
+      tryCompress();
+    }
 
     // Khởi tạo dropdown
     sizeSelect.dispatchEvent(new Event('change'));
