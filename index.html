@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Danger Tech Image Resizer</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      font-family: 'Courier New', monospace;
+      color: #0ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #f00;
+      text-shadow: 0 0 5px red;
+    }
+
+    .container {
+      background: #111;
+      padding: 20px;
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      box-shadow: 0 0 15px #0ff;
+    }
+
+    input, button, select {
+      margin: 10px 0;
+      padding: 8px;
+      background: #222;
+      color: #0f0;
+      border: 1px solid #0f0;
+      font-family: inherit;
+    }
+
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚠️ Image Resizer v1.0</h1>
+  <div class="container">
+    <input type="file" id="upload" accept="image/*" />
+    <br/>
+    Kích thước: 
+    <select id="size-select">
+      <option value="750x750">750x750</option>
+      <option value="530x530">530x530</option>
+    </select>
+    <br/>
+    <button onclick="resizeImage()">Resize & Download</button>
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script>
+    let originalFile;
+
+    document.getElementById('upload').addEventListener('change', (e) => {
+      originalFile = e.target.files[0];
+    });
+
+    function resizeImage() {
+      if (!originalFile) return alert("Hãy chọn một ảnh.");
+
+      const sizeValue = document.getElementById('size-select').value;
+      const [width, height] = sizeValue.split('x').map(Number);
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const originalName = originalFile.name;
+          const extension = originalName.split('.').pop();
+          const baseName = originalName.replace(/\.[^/.]+$/, "");
+          const resizedName = `${baseName}_${width}x${height}.${extension}`;
+
+          canvas.toBlob(function(blob) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = resizedName;
+            a.click();
+          }, originalFile.type);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(originalFile);
+    }
+  </script>
+</body>
+</html>
