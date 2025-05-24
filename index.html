@@ -220,28 +220,36 @@
       }
     });
 
-    function resizeImage() {
-      if (!originalFile) return alert("Hãy chọn một ảnh.");
+    function function resizeImage() {
+  if (!originalFile) return alert("Hãy chọn một ảnh.");
 
-      const width = parseInt(widthInput.value);
-      const height = parseInt(heightInput.value);
-      if (!width || !height) return alert("Nhập kích thước hợp lệ.");
+  const width = parseInt(widthInput.value);
+  const height = parseInt(heightInput.value);
+  if (!width || !height) return alert("Nhập kích thước hợp lệ.");
 
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = width;
-      canvas.height = height;
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(originalImage, 0, 0, width, height);
 
-      ctx.drawImage(originalImage, 0, 0, width, height);
+  const originalName = originalFile.name;
+  const baseName = originalName.replace(/\.[^/.]+$/, "");
+  const resizedName = `${baseName}_${width}x${height}.jpg`;
 
-      const originalName = originalFile.name;
-      const extension = originalName.split('.').pop();
-      const baseName = originalName.replace(/\.[^/.]+$/, "");
-      const resizedName = `${baseName}_${width}x${height}.${extension}`;
+  // Bắt đầu nén ảnh JPEG dần dần
+  let quality = 0.9;
 
-      canvas.toBlob(function (blob) {
+  function tryCompress() {
+    canvas.toBlob(function (blob) {
+      if (blob.size <= 500 * 1024 || quality <= 0.3) {
+        if (blob.size > 500 * 1024) {
+          alert("Không thể nén ảnh dưới 500KB ở chất lượng chấp nhận được. Hãy chọn ảnh nhỏ hơn hoặc giảm kích thước.");
+          return;
+        }
+
         document.getElementById("info-resized").style.display = "block";
-        document.getElementById("resized-info").innerText = 
+        document.getElementById("resized-info").innerText =
           `Tên: ${resizedName}\n` +
           `Kích thước mới: ${width}x${height}px\n` +
           `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
@@ -250,8 +258,15 @@
         a.href = URL.createObjectURL(blob);
         a.download = resizedName;
         a.click();
-      }, originalFile.type);
-    }
+      } else {
+        quality -= 0.05;
+        tryCompress();
+      }
+    }, 'image/jpeg', quality);
+  }
+
+  tryCompress();
+}
 
     // Khởi tạo dropdown
     sizeSelect.dispatchEvent(new Event('change'));
