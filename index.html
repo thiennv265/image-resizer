@@ -9,7 +9,7 @@
       background: #f0f2f5;
       font-family: "Segoe UI", Roboto, sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -17,30 +17,35 @@
 
     h1 {
       color: #1877f2;
-      font-size: 22px;
-      margin: 10px 0 15px;
+      font-size: 20px;
+      margin: 12px 0 8px;
     }
 
     .container {
       background: #fff;
-      padding: 20px 24px;
+      padding: 16px 20px 20px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       max-width: 380px;
       width: 100%;
+      box-sizing: border-box;
     }
 
-    input[type="file"], select {
+    input[type="file"],
+    select {
       width: 100%;
-      padding: 8px;
-      margin: 8px 0 16px;
+      padding: 9px;
+      margin-bottom: 10px;
       border: 1px solid #ddd;
       border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+      background-color: #fff;
     }
 
     button {
       display: block;
-      margin: 12px auto 0;
+      margin: 8px auto 0;
       padding: 10px 20px;
       background-color: #1877f2;
       color: white;
@@ -51,6 +56,7 @@
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(24, 119, 242, 0.3);
       transition: background-color 0.3s ease;
+      width: 100%;
     }
 
     button:hover {
@@ -62,7 +68,7 @@
       background: #f9f9f9;
       padding: 10px;
       border-left: 4px solid #1877f2;
-      margin-top: 16px;
+      margin-top: 12px;
       border-radius: 4px;
       word-break: break-word;
     }
@@ -82,12 +88,10 @@
   <h1>🖼 Image Resizer</h1>
   <div class="container">
     <input type="file" id="upload" accept="image/*" />
-    <label for="size-select"><strong>Kích thước:</strong></label>
     <select id="size-select">
       <option value="750x750">750x750</option>
       <option value="530x530">530x530</option>
     </select>
-
     <button onclick="resizeImage()">Resize & Download</button>
 
     <div class="info-box" id="info-original" style="display:none;">
