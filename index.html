@@ -2,17 +2,14 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Image Resizer Tool</title>
   <style>
     body {
       background: #f0f2f5;
       font-family: "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column; align-items: center;
     }
 
     h1 {
@@ -26,33 +23,54 @@
       padding: 16px 20px 20px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      max-width: 700px;
+      max-width: 750px;
       width: 100%;
       box-sizing: border-box;
       display: flex;
       gap: 20px;
     }
 
-    /* Phần hiển thị ảnh */
+    /* Preview ảnh */
     .preview-box {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
       gap: 15px;
-      width: 200px;
+      width: 220px;
       user-select: none;
     }
 
-    .preview-box img {
+    .preview-frame {
+      border: 2px solid #1877f2;
+      border-radius: 8px;
+      padding: 6px;
+      background: #fff;
+      text-align: center;
+      position: relative;
+    }
+
+    .preview-frame label {
+      position: absolute;
+      top: -18px;
+      left: 10px;
+      background: #1877f2;
+      color: white;
+      padding: 2px 8px;
+      font-weight: 600;
+      font-size: 13px;
+      border-radius: 6px;
+      user-select: none;
+    }
+
+    .preview-frame img {
       max-width: 100%;
-      max-height: 150px;
+      max-height: 160px;
       border-radius: 6px;
       object-fit: contain;
       background: white;
-      border: 1px solid #ccc;
     }
 
-    /* Phần control */
+    /* Controls */
     .controls {
       flex-grow: 1;
       display: flex;
@@ -85,7 +103,7 @@
     #file-name {
       font-size: 13px;
       color: #555;
-      max-width: 300px;
+      max-width: 320px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -119,6 +137,18 @@
       background-color: #eef3fb;
       box-sizing: border-box;
       text-align: center;
+    }
+
+    .resize-mode {
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #333;
+      user-select: none;
+    }
+
+    .resize-mode label {
+      margin-right: 15px;
+      cursor: pointer;
     }
 
     button {
@@ -170,11 +200,17 @@
 
     <!-- Preview ảnh gốc & ảnh dự kiến -->
     <div class="preview-box">
-      <img id="img-original" alt="Ảnh gốc chưa tải" />
-      <img id="img-preview" alt="Ảnh dự kiến" />
+      <div class="preview-frame">
+        <label>Ảnh gốc</label>
+        <img id="img-original" alt="Ảnh gốc chưa tải" />
+      </div>
+      <div class="preview-frame">
+        <label>Ảnh dự kiến</label>
+        <img id="img-preview" alt="Ảnh dự kiến" />
+      </div>
     </div>
 
-    <!-- Controls chọn file, size, nút, info -->
+    <!-- Controls -->
     <div class="controls">
       <div class="file-upload">
         <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
@@ -183,13 +219,18 @@
       </div>
 
       <div class="size-options">
-        <select id="size-select">
+        <select id="size-select" aria-label="Chọn kích thước">
           <option value="750x750">750x750</option>
           <option value="540x300">540x300</option>
           <option value="custom">Tùy chỉnh</option>
         </select>
-        <input type="number" id="custom-width" placeholder="Width" readonly />
-        <input type="number" id="custom-height" placeholder="Height" readonly />
+        <input type="number" id="custom-width" placeholder="Width" readonly aria-label="Chiều rộng" />
+        <input type="number" id="custom-height" placeholder="Height" readonly aria-label="Chiều cao" />
+      </div>
+
+      <div class="resize-mode" aria-label="Chọn cách resize">
+        <label><input type="radio" name="resizeMode" value="stretch" checked /> Resize đầy đủ (bóp méo)</label>
+        <label><input type="radio" name="resizeMode" value="crop" /> Resize giữ tỉ lệ + crop</label>
       </div>
 
       <button onclick="resizeImage()">Resize & Download</button>
@@ -240,33 +281,29 @@
         heightInput.readOnly = false;
         widthInput.value = "";
         heightInput.value = "";
-        imgPreview.src = "";
-        resizedInfo.textContent = "";
-        infoResizedBox.style.display = "none";
       } else {
         const [w, h] = presets[value];
         widthInput.value = w;
         heightInput.value = h;
         widthInput.readOnly = true;
         heightInput.readOnly = true;
-        updatePreviewImage();
       }
+      updatePreviewImage();
     });
 
     fileInput.addEventListener("change", function() {
       if (this.files[0]) {
         originalFile = this.files[0];
         fileNameDisplay.textContent = originalFile.name;
-
         const reader = new FileReader();
         reader.onload = function (event) {
           originalImage.onload = () => {
             imgOriginal.src = originalImage.src;
+            infoOriginalBox.style.display = "block";
             originalInfo.textContent = 
               `Tên: ${originalFile.name}\n` +
-              `Kích thước: ${originalImage.width}x${originalImage.height}px\n` +
+              `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
               `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
-            infoOriginalBox.style.display = "block";
             updatePreviewImage();
           };
           originalImage.src = event.target.result;
@@ -275,9 +312,7 @@
       } else {
         fileNameDisplay.textContent = "Chưa có ảnh";
         imgOriginal.src = "";
-        originalInfo.textContent = "";
         imgPreview.src = "";
-        resizedInfo.textContent = "";
         infoOriginalBox.style.display = "none";
         infoResizedBox.style.display = "none";
       }
@@ -287,27 +322,54 @@
     heightInput.addEventListener("input", updatePreviewImage);
 
     function updatePreviewImage() {
-      if (!originalImage.src) return;
+      if (!originalImage.src) {
+        imgPreview.src = "";
+        infoResizedBox.style.display = "none";
+        return;
+      }
 
       const width = parseInt(widthInput.value);
       const height = parseInt(heightInput.value);
       if (!width || !height) {
         imgPreview.src = "";
-        resizedInfo.textContent = "";
         infoResizedBox.style.display = "none";
         return;
       }
 
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(originalImage, 0, 0, width, height);
-      imgPreview.src = canvas.toDataURL("image/jpeg");
+      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
 
-      // Hiển thị info resized tạm thời (chưa tính nén)
-      resizedInfo.textContent = `Kích thước: ${width}x${height}px`;
-      infoResizedBox.style.display = "block";
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      if (mode === "stretch") {
+        // Resize bóp méo
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, 0, 0, width, height);
+      } else {
+        // Resize giữ tỉ lệ + crop
+        // Tính tỉ lệ resize để đảm bảo ít nhất 1 chiều = kích thước yêu cầu, chiều còn lại >= kích thước, crop trung tâm
+
+        const ratioW = width / originalImage.width;
+        const ratioH = height / originalImage.height;
+        const scale = Math.max(ratioW, ratioH);
+
+        const scaledW = originalImage.width * scale;
+        const scaledH = originalImage.height * scale;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Vị trí crop ở giữa
+        const sx = (scaledW - width) / 2 / scale;
+        const sy = (scaledH - height) / 2 / scale;
+
+        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+      }
+
+      imgPreview.src = canvas.toDataURL("image/jpeg");
+      // Không hiển thị info resized tạm thời vì dung lượng chưa biết
+      infoResizedBox.style.display = "none";
     }
 
     function resizeImage() {
@@ -317,12 +379,37 @@
       const height = parseInt(heightInput.value);
       if (!width || !height) return alert("Nhập kích thước hợp lệ.");
 
+      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
+
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(originalImage, 0, 0, width, height);
 
+      if (mode === "stretch") {
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, 0, 0, width, height);
+        compressAndDownload(canvas, width, height);
+      } else {
+        // Resize giữ tỉ lệ + crop
+        const ratioW = width / originalImage.width;
+        const ratioH = height / originalImage.height;
+        const scale = Math.max(ratioW, ratioH);
+
+        const scaledW = originalImage.width * scale;
+        const scaledH = originalImage.height * scale;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const sx = (scaledW - width) / 2 / scale;
+        const sy = (scaledH - height) / 2 / scale;
+
+        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+        compressAndDownload(canvas, width, height);
+      }
+    }
+
+    function compressAndDownload(canvas, width, height) {
       const originalName = originalFile.name;
       const baseName = originalName.replace(/\.[^/.]+$/, "");
       const resizedName = `${baseName}_${width}x${height}.jpeg`;
@@ -339,6 +426,9 @@
               `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
             infoResizedBox.style.display = "block";
 
+            // Cập nhật ảnh preview (chắc chắn ảnh nén thực tế)
+            imgPreview.src = URL.createObjectURL(blob);
+
             // Tải file
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -354,7 +444,7 @@
       tryCompress();
     }
 
-    // Khởi tạo dropdown
+    // Khởi tạo dropdown và preview
     sizeSelect.dispatchEvent(new Event('change'));
   </script>
 </body>
