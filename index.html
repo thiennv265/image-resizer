@@ -26,9 +26,48 @@
       padding: 16px 20px 20px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      max-width: 420px;
+      max-width: 700px;
       width: 100%;
       box-sizing: border-box;
+      display: flex;
+      gap: 20px;
+    }
+
+    /* Phần hiển thị ảnh */
+    .preview-box {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 200px;
+    }
+
+    .preview-box .preview-item {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+      color: #333;
+      user-select: none;
+    }
+
+    .preview-box .preview-item img {
+      max-width: 100%;
+      max-height: 150px;
+      border-radius: 4px;
+      margin-top: 6px;
+      object-fit: contain;
+      background: white;
+      border: 1px solid #ccc;
+    }
+
+    /* Phần control */
+    .controls {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .file-upload {
@@ -57,7 +96,7 @@
     #file-name {
       font-size: 13px;
       color: #555;
-      max-width: 200px;
+      max-width: 300px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -67,6 +106,7 @@
       display: flex;
       gap: 6px;
       margin-bottom: 10px;
+      align-items: center;
     }
 
     .size-options select {
@@ -106,6 +146,7 @@
       box-shadow: 0 2px 4px rgba(24, 119, 242, 0.3);
       transition: background-color 0.3s ease;
       width: 100%;
+      max-width: 320px;
     }
 
     button:hover {
@@ -120,6 +161,7 @@
       margin-top: 12px;
       border-radius: 4px;
       word-break: break-word;
+      white-space: pre-line;
     }
 
     .info-title {
@@ -136,36 +178,44 @@
 <body>
   <h1>🖼 Image Resizer</h1>
   <div class="container">
-    <div class="file-upload">
-      <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
-      <span id="file-name">Chưa có ảnh</span>
-      <input type="file" id="upload" accept="image/*" />
+
+    <!-- Preview ảnh gốc & ảnh dự kiến -->
+    <div class="preview-box">
+      <div class="preview-item" id="original-preview">
+        <div class="info-title">Ảnh gốc</div>
+        <img id="img-original" src="" alt="Ảnh gốc chưa tải" />
+        <div id="original-info"></div>
+      </div>
+      <div class="preview-item" id="preview-resized">
+        <div class="info-title">Ảnh dự kiến</div>
+        <img id="img-preview" src="" alt="Ảnh dự kiến" />
+        <div id="resized-info"></div>
+      </div>
     </div>
 
-    <div class="size-options">
-      <select id="size-select">
-        <option value="750x750">750x750</option>
-        <option value="540x300">540x300</option>
-        <option value="custom">Tùy chỉnh</option>
-      </select>
-      <input type="number" id="custom-width" placeholder="Width" readonly />
-      <input type="number" id="custom-height" placeholder="Height" readonly />
+    <!-- Controls chọn file, size, nút -->
+    <div class="controls">
+      <div class="file-upload">
+        <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
+        <span id="file-name">Chưa có ảnh</span>
+        <input type="file" id="upload" accept="image/*" />
+      </div>
+
+      <div class="size-options">
+        <select id="size-select">
+          <option value="750x750">750x750</option>
+          <option value="540x300">540x300</option>
+          <option value="custom">Tùy chỉnh</option>
+        </select>
+        <input type="number" id="custom-width" placeholder="Width" readonly />
+        <input type="number" id="custom-height" placeholder="Height" readonly />
+      </div>
+
+      <button onclick="resizeImage()">Resize & Download</button>
     </div>
-
-    <button onclick="resizeImage()">Resize & Download</button>
-
-    <div class="info-box" id="info-original" style="display:none;">
-      <div class="info-title">Ảnh gốc:</div>
-      <div id="original-info"></div>
-    </div>
-
-    <div class="info-box" id="info-resized" style="display:none;">
-      <div class="info-title">Ảnh mới:</div>
-      <div id="resized-info"></div>
-    </div>
-
-    <canvas id="canvas"></canvas>
   </div>
+
+  <canvas id="canvas"></canvas>
 
   <script>
     let originalFile;
@@ -177,6 +227,12 @@
 
     const fileInput = document.getElementById('upload');
     const fileNameDisplay = document.getElementById('file-name');
+
+    const imgOriginal = document.getElementById('img-original');
+    const imgPreview = document.getElementById('img-preview');
+
+    const originalInfo = document.getElementById('original-info');
+    const resizedInfo = document.getElementById('resized-info');
 
     const presets = {
       "750x750": [750, 750],
@@ -190,35 +246,79 @@
         heightInput.readOnly = false;
         widthInput.value = "";
         heightInput.value = "";
+        imgPreview.src = "";
+        resizedInfo.textContent = "";
       } else {
         const [w, h] = presets[value];
         widthInput.value = w;
         heightInput.value = h;
         widthInput.readOnly = true;
         heightInput.readOnly = true;
+        updatePreviewImage();
       }
     });
 
     fileInput.addEventListener("change", function() {
       if (this.files[0]) {
-        fileNameDisplay.textContent = this.files[0].name;
         originalFile = this.files[0];
+        fileNameDisplay.textContent = originalFile.name;
+
         const reader = new FileReader();
         reader.onload = function (event) {
           originalImage.onload = () => {
-            document.getElementById("info-original").style.display = "block";
-            document.getElementById("original-info").innerText = 
+            imgOriginal.src = originalImage.src;
+            originalInfo.textContent = 
               `Tên: ${originalFile.name}\n` +
-              `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
+              `Kích thước: ${originalImage.width}x${originalImage.height}px\n` +
               `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+            updatePreviewImage();
           };
           originalImage.src = event.target.result;
         };
         reader.readAsDataURL(originalFile);
       } else {
         fileNameDisplay.textContent = "Chưa có ảnh";
+        imgOriginal.src = "";
+        originalInfo.textContent = "";
+        imgPreview.src = "";
+        resizedInfo.textContent = "";
       }
     });
+
+    // Cập nhật ảnh dự kiến preview khi thay đổi kích thước hoặc chọn size
+    function updatePreviewImage() {
+      if (!originalImage.src) {
+        imgPreview.src = "";
+        resizedInfo.textContent = "";
+        return;
+      }
+
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+
+      if (!width || !height) {
+        imgPreview.src = "";
+        resizedInfo.textContent = "";
+        return;
+      }
+
+      // Tạo canvas tạm để resize ảnh preview
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.drawImage(originalImage, 0, 0, width, height);
+
+      imgPreview.src = canvas.toDataURL("image/jpeg", 0.8);
+
+      resizedInfo.textContent = `Kích thước dự kiến: ${width}x${height}px`;
+    }
+
+    // Cập nhật preview khi thay đổi kích thước custom
+    widthInput.addEventListener('input', updatePreviewImage);
+    heightInput.addEventListener('input', updatePreviewImage);
 
     function resizeImage() {
       if (!originalFile) return alert("Hãy chọn một ảnh.");
@@ -231,6 +331,7 @@
       const ctx = canvas.getContext('2d');
       canvas.width = width;
       canvas.height = height;
+      ctx.clearRect(0, 0, width, height);
       ctx.drawImage(originalImage, 0, 0, width, height);
 
       const originalName = originalFile.name;
@@ -240,19 +341,9 @@
       let quality = 0.9;
 
       function tryCompress() {
-        canvas.toBlob(function (blob) {
-          if (blob.size <= 500 * 1024 || quality <= 0.3) {
-            if (blob.size > 500 * 1024) {
-              alert("Không thể nén ảnh dưới 500KB ở chất lượng chấp nhận được. Hãy chọn ảnh nhỏ hơn hoặc giảm kích thước.");
-              return;
-            }
-
-            document.getElementById("info-resized").style.display = "block";
-            document.getElementById("resized-info").innerText =
-              `Tên: ${resizedName}\n` +
-              `Kích thước mới: ${width}x${height}px\n` +
-              `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
-
+        canvas.toBlob(function(blob) {
+          if (blob.size <= 500 * 1024 || quality < 0.1) {
+            // Tải file
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = resizedName;
