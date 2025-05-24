@@ -27,14 +27,12 @@
       padding: 16px 20px 20px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      max-width: 400px;
+      max-width: 420px;
       width: 100%;
       box-sizing: border-box;
     }
 
-    input[type="file"],
-    select,
-    input[type="number"] {
+    input[type="file"] {
       width: 100%;
       padding: 9px;
       margin-bottom: 10px;
@@ -45,12 +43,27 @@
       box-sizing: border-box;
     }
 
-    .size-row {
+    .size-options {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
-    .size-row input {
+    .size-options select,
+    .size-options input[type="number"] {
+      padding: 9px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+
+    .size-options select {
+      flex: 2;
+    }
+
+    .size-options input[type="number"] {
       flex: 1;
     }
 
@@ -100,13 +113,12 @@
   <div class="container">
     <input type="file" id="upload" accept="image/*" />
 
-    <select id="size-select">
-      <option value="750x750">750x750</option>
-      <option value="530x530">530x530</option>
-      <option value="custom">Tùy chỉnh</option>
-    </select>
-
-    <div class="size-row">
+    <div class="size-options">
+      <select id="size-select">
+        <option value="750x750">750x750</option>
+        <option value="530x530">530x530</option>
+        <option value="custom">Tùy chỉnh</option>
+      </select>
       <input type="number" id="custom-width" placeholder="Width" readonly />
       <input type="number" id="custom-height" placeholder="Height" readonly />
     </div>
