@@ -9,7 +9,7 @@
       background: #f0f2f5;
       font-family: "Segoe UI", Roboto, sans-serif;
       margin: 0;
-      padding: 10px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -17,59 +17,60 @@
 
     h1 {
       color: #1877f2;
-      margin-bottom: 10px;
+      font-size: 22px;
+      margin: 10px 0 15px;
     }
 
     .container {
       background: #fff;
-      padding: 30px;
+      padding: 20px 24px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      max-width: 400px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      max-width: 380px;
       width: 100%;
     }
 
     input[type="file"], select {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0 20px;
+      padding: 8px;
+      margin: 8px 0 16px;
       border: 1px solid #ddd;
       border-radius: 6px;
     }
 
     button {
       display: block;
-      margin: 20px auto 0;
-      padding: 12px 24px;
+      margin: 12px auto 0;
+      padding: 10px 20px;
       background-color: #1877f2;
       color: white;
-      font-size: 16px;
-      font-weight: bold;
+      font-size: 15px;
+      font-weight: 600;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(24, 119, 242, 0.3);
+      box-shadow: 0 2px 4px rgba(24, 119, 242, 0.3);
       transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background-color: #155fc9;
+      background-color: #145fc2;
     }
 
     .info-box {
-      font-size: 14px;
+      font-size: 13px;
       background: #f9f9f9;
       padding: 10px;
       border-left: 4px solid #1877f2;
-      margin-top: 20px;
+      margin-top: 16px;
       border-radius: 4px;
       word-break: break-word;
     }
 
     .info-title {
       font-weight: bold;
-      margin-bottom: 5px;
-      color: #444;
+      margin-bottom: 4px;
+      color: #333;
     }
 
     canvas {
@@ -81,7 +82,7 @@
   <h1>🖼 Image Resizer</h1>
   <div class="container">
     <input type="file" id="upload" accept="image/*" />
-    <label for="size-select"><strong>Chọn kích thước:</strong></label>
+    <label for="size-select"><strong>Kích thước:</strong></label>
     <select id="size-select">
       <option value="750x750">750x750</option>
       <option value="530x530">530x530</option>
@@ -95,7 +96,7 @@
     </div>
 
     <div class="info-box" id="info-resized" style="display:none;">
-      <div class="info-title">Ảnh sau khi resize:</div>
+      <div class="info-title">Ảnh mới:</div>
       <div id="resized-info"></div>
     </div>
 
