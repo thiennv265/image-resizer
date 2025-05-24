@@ -41,25 +41,43 @@
     }
 
     .preview-frame {
-      border: 2px solid #1877f2;
+      border: 2px solid;
       border-radius: 8px;
       padding: 6px;
       background: #fff;
       text-align: center;
       position: relative;
+      height: 180px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #666;
+      font-size: 14px;
+      font-weight: 600;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .preview-frame.original {
+      border-color: #1877f2;
+    }
+    .preview-frame.preview {
+      border-color: #2ea51e;
+      color: #2ea51e;
     }
 
     .preview-frame label {
       position: absolute;
       top: -18px;
       left: 10px;
-      background: #1877f2;
-      color: white;
+      background: inherit;
+      color: inherit;
       padding: 2px 8px;
       font-weight: 600;
       font-size: 13px;
       border-radius: 6px;
       user-select: none;
+      pointer-events: none;
     }
 
     .preview-frame img {
@@ -68,6 +86,7 @@
       border-radius: 6px;
       object-fit: contain;
       background: white;
+      display: block;
     }
 
     /* Controls */
@@ -183,6 +202,10 @@
       white-space: pre-line;
     }
 
+    .info-box.resized {
+      border-color: #2ea51e;
+    }
+
     .info-title {
       font-weight: bold;
       margin-bottom: 4px;
@@ -200,20 +223,22 @@
 
     <!-- Preview ảnh gốc & ảnh dự kiến -->
     <div class="preview-box">
-      <div class="preview-frame">
+      <div class="preview-frame original" id="frame-original">
         <label>Ảnh gốc</label>
         <img id="img-original" alt="Ảnh gốc chưa tải" />
+        <span id="text-original">Chưa có ảnh</span>
       </div>
-      <div class="preview-frame">
+      <div class="preview-frame preview" id="frame-preview">
         <label>Ảnh dự kiến</label>
         <img id="img-preview" alt="Ảnh dự kiến" />
+        <span id="text-preview">Chưa có ảnh</span>
       </div>
     </div>
 
     <!-- Controls -->
     <div class="controls">
       <div class="file-upload">
-        <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
+        <label for="upload" class="custom-upload-button" role="button" tabindex="0">📂 Chọn ảnh</label>
         <span id="file-name">Chưa có ảnh</span>
         <input type="file" id="upload" accept="image/*" />
       </div>
@@ -240,7 +265,7 @@
         <div id="original-info"></div>
       </div>
 
-      <div class="info-box" id="info-resized" style="display:none;">
+      <div class="info-box resized" id="info-resized" style="display:none;">
         <div class="info-title">Ảnh mới:</div>
         <div id="resized-info"></div>
       </div>
@@ -263,6 +288,9 @@
     const imgOriginal = document.getElementById('img-original');
     const imgPreview = document.getElementById('img-preview');
 
+    const textOriginal = document.getElementById('text-original');
+    const textPreview = document.getElementById('text-preview');
+
     const originalInfo = document.getElementById('original-info');
     const resizedInfo = document.getElementById('resized-info');
 
@@ -273,6 +301,27 @@
       "750x750": [750, 750],
       "540x300": [540, 300]
     };
+
+    // Ẩn hình khi chưa có, hiện text
+    function showOriginalImage(show) {
+      if (show) {
+        imgOriginal.style.display = "block";
+        textOriginal.style.display = "none";
+      } else {
+        imgOriginal.style.display = "none";
+        textOriginal.style.display = "block";
+      }
+    }
+
+    function showPreviewImage(show) {
+      if (show) {
+        imgPreview.style.display = "block";
+        textPreview.style.display = "none";
+      } else {
+        imgPreview.style.display = "none";
+        textPreview.style.display = "block";
+      }
+    }
 
     sizeSelect.addEventListener('change', () => {
       const value = sizeSelect.value;
@@ -298,13 +347,33 @@
         const reader = new FileReader();
         reader.onload = function (event) {
           originalImage.onload = () => {
+            imgOriginal.onerror = () => {
+              showOriginalImage(false);
+              originalInfo.textContent = "";
+              infoOriginalBox.style.display = "none";
+            };
+
             imgOriginal.src = originalImage.src;
+            showOriginalImage(true);
+
             infoOriginalBox.style.display = "block";
             originalInfo.textContent = 
               `Tên: ${originalFile.name}\n` +
               `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
               `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+
             updatePreviewImage();
+          };
+          originalImage.onerror = () => {
+            alert("Ảnh không hợp lệ hoặc không thể tải.");
+            originalFile = null;
+            fileNameDisplay.textContent = "Chưa có ảnh";
+            imgOriginal.src = "";
+            imgPreview.src = "";
+            showOriginalImage(false);
+            showPreviewImage(false);
+            infoOriginalBox.style.display = "none";
+            infoResizedBox.style.display = "none";
           };
           originalImage.src = event.target.result;
         };
@@ -313,6 +382,8 @@
         fileNameDisplay.textContent = "Chưa có ảnh";
         imgOriginal.src = "";
         imgPreview.src = "";
+        showOriginalImage(false);
+        showPreviewImage(false);
         infoOriginalBox.style.display = "none";
         infoResizedBox.style.display = "none";
       }
@@ -323,7 +394,7 @@
 
     function updatePreviewImage() {
       if (!originalImage.src) {
-        imgPreview.src = "";
+        showPreviewImage(false);
         infoResizedBox.style.display = "none";
         return;
       }
@@ -331,7 +402,7 @@
       const width = parseInt(widthInput.value);
       const height = parseInt(heightInput.value);
       if (!width || !height) {
-        imgPreview.src = "";
+        showPreviewImage(false);
         infoResizedBox.style.display = "none";
         return;
       }
@@ -342,14 +413,10 @@
       const ctx = canvas.getContext("2d");
 
       if (mode === "stretch") {
-        // Resize bóp méo
         canvas.width = width;
         canvas.height = height;
         ctx.drawImage(originalImage, 0, 0, width, height);
       } else {
-        // Resize giữ tỉ lệ + crop
-        // Tính tỉ lệ resize để đảm bảo ít nhất 1 chiều = kích thước yêu cầu, chiều còn lại >= kích thước, crop trung tâm
-
         const ratioW = width / originalImage.width;
         const ratioH = height / originalImage.height;
         const scale = Math.max(ratioW, ratioH);
@@ -360,7 +427,6 @@
         canvas.width = width;
         canvas.height = height;
 
-        // Vị trí crop ở giữa
         const sx = (scaledW - width) / 2 / scale;
         const sy = (scaledH - height) / 2 / scale;
 
@@ -368,7 +434,7 @@
       }
 
       imgPreview.src = canvas.toDataURL("image/jpeg");
-      // Không hiển thị info resized tạm thời vì dung lượng chưa biết
+      showPreviewImage(true);
       infoResizedBox.style.display = "none";
     }
 
@@ -390,7 +456,6 @@
         ctx.drawImage(originalImage, 0, 0, width, height);
         compressAndDownload(canvas, width, height);
       } else {
-        // Resize giữ tỉ lệ + crop
         const ratioW = width / originalImage.width;
         const ratioH = height / originalImage.height;
         const scale = Math.max(ratioW, ratioH);
@@ -419,17 +484,15 @@
       function tryCompress() {
         canvas.toBlob(function(blob) {
           if (blob.size <= 500 * 1024 || quality < 0.1) {
-            // Cập nhật info file resized
             resizedInfo.textContent = 
               `Tên: ${resizedName}\n` +
               `Kích thước mới: ${width}x${height}px\n` +
               `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
             infoResizedBox.style.display = "block";
 
-            // Cập nhật ảnh preview (chắc chắn ảnh nén thực tế)
             imgPreview.src = URL.createObjectURL(blob);
+            showPreviewImage(true);
 
-            // Tải file
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = resizedName;
@@ -444,8 +507,10 @@
       tryCompress();
     }
 
-    // Khởi tạo dropdown và preview
+    // Khởi tạo
     sizeSelect.dispatchEvent(new Event('change'));
+    showOriginalImage(false);
+    showPreviewImage(false);
   </script>
 </body>
 </html>
