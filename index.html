@@ -192,25 +192,25 @@
     }
 
     .info-box {
-      font-size: 13px;
-      background: #f9f9f9;
-      padding: 10px;
-      border-left: 4px solid #1877f2;
-      margin-top: 12px;
-      border-radius: 4px;
-      word-break: break-word;
-      white-space: pre-line;
-    }
+  font-size: 13px;
+  background: #f9f9f9;
+  padding: 6px 10px;
+  border-left: 4px solid #1877f2;
+  margin-top: 8px;
+  border-radius: 4px;
+  line-height: 1.4;
+  white-space: pre-line;
+}
 
     .info-box.resized {
       border-color: #2ea51e;
     }
 
-    .info-title {
-      font-weight: bold;
-      margin-bottom: 0px;
-      color: #333;
-    }
+.info-title {
+  font-weight: bold;
+  margin-bottom: 0px;
+  color: #333;
+}
 
     canvas {
       display: none;
@@ -426,16 +426,20 @@
       ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
     }
 
-    canvas.toBlob(function(blob) {
-      resizedInfo.textContent =
-        `Tên: Xem trước\n` +
-        `Kích thước mới: ${width}x${height}px\n` +
-        `Dung lượng ước tính: ${(blob.size / 1024).toFixed(1)} KB`;
-      infoResizedBox.style.display = "block";
+canvas.toBlob(function(blob) {
+  const originalName = originalFile?.name || "preview";
+  const baseName = originalName.replace(/\.[^/.]+$/, "");
+  const resizedName = `${baseName}_${width}x${height}.jpeg`;
 
-      imgPreview.src = URL.createObjectURL(blob);
-      showPreviewImage(true);
-    }, 'image/jpeg', 0.92);
+  resizedInfo.textContent =
+    `Tên: ${resizedName}\n` +
+    `Kích thước mới: ${width}x${height}px\n` +
+    `Dung lượng ước tính: ${(blob.size / 1024).toFixed(1)} KB`;
+  infoResizedBox.style.display = "block";
+
+  imgPreview.src = URL.createObjectURL(blob);
+  showPreviewImage(true);
+}, 'image/jpeg', 0.92);
   }
 
   function resizeImage() {
