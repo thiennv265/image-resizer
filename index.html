@@ -13,7 +13,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      cursor: url('https://cur.cursors-4u.net/animals/ani-4/ani350.gif'), auto;
     }
 
     h1 {
@@ -32,15 +31,36 @@
       box-sizing: border-box;
     }
 
-    input[type="file"] {
-      width: 100%;
-      padding: 9px;
+    .file-upload {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 10px;
-      border: 1px solid #ddd;
+    }
+
+    .custom-upload-button {
+      padding: 8px 14px;
+      background-color: #1877f2;
+      color: white;
       border-radius: 6px;
+      cursor: pointer;
       font-size: 14px;
-      background-color: #fff;
-      box-sizing: border-box;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #upload {
+      display: none;
+    }
+
+    #file-name {
+      font-size: 13px;
+      color: #555;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .size-options {
@@ -113,7 +133,11 @@
 <body>
   <h1>🖼 Image Resizer</h1>
   <div class="container">
-    <input type="file" id="upload" accept="image/*" />
+    <div class="file-upload">
+      <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
+      <span id="file-name">Chưa có ảnh</span>
+      <input type="file" id="upload" accept="image/*" />
+    </div>
 
     <div class="size-options">
       <select id="size-select">
@@ -148,6 +172,9 @@
     const widthInput = document.getElementById('custom-width');
     const heightInput = document.getElementById('custom-height');
 
+    const fileInput = document.getElementById('upload');
+    const fileNameDisplay = document.getElementById('file-name');
+
     const presets = {
       "750x750": [750, 750],
       "530x530": [530, 530]
@@ -169,20 +196,25 @@
       }
     });
 
-    document.getElementById('upload').addEventListener('change', (e) => {
-      originalFile = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        originalImage.onload = () => {
-          document.getElementById("info-original").style.display = "block";
-          document.getElementById("original-info").innerText = 
-            `Tên: ${originalFile.name}\n` +
-            `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
-            `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+    fileInput.addEventListener("change", function() {
+      if (this.files[0]) {
+        fileNameDisplay.textContent = this.files[0].name;
+        originalFile = this.files[0];
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          originalImage.onload = () => {
+            document.getElementById("info-original").style.display = "block";
+            document.getElementById("original-info").innerText = 
+              `Tên: ${originalFile.name}\n` +
+              `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
+              `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
+          };
+          originalImage.src = event.target.result;
         };
-        originalImage.src = event.target.result;
-      };
-      reader.readAsDataURL(originalFile);
+        reader.readAsDataURL(originalFile);
+      } else {
+        fileNameDisplay.textContent = "Chưa có ảnh";
+      }
     });
 
     function resizeImage() {
@@ -218,7 +250,7 @@
       }, originalFile.type);
     }
 
-    // Tự động cập nhật 2 ô size khi load
+    // Khởi tạo dropdown
     sizeSelect.dispatchEvent(new Event('change'));
   </script>
 </body>
