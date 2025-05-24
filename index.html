@@ -30,12 +30,11 @@
       gap: 20px;
     }
 
-    /* Preview ảnh */
     .preview-box {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 10px;
       width: 220px;
       user-select: none;
     }
@@ -54,7 +53,6 @@
       color: #666;
       font-size: 14px;
       font-weight: 600;
-      user-select: none;
       overflow: hidden;
     }
 
@@ -68,15 +66,14 @@
 
     .preview-frame label {
       position: absolute;
-      top: -18px;
+      top: -12px;
       left: 10px;
-      background: inherit;
+      background: white;
       color: inherit;
-      padding: 2px 8px;
+      padding: 0 6px;
       font-weight: 600;
-      font-size: 13px;
-      border-radius: 6px;
-      user-select: none;
+      font-size: 12px;
+      border-radius: 4px;
       pointer-events: none;
     }
 
@@ -89,7 +86,6 @@
       display: block;
     }
 
-    /* Controls */
     .controls {
       flex-grow: 1;
       display: flex;
@@ -135,56 +131,51 @@
       align-items: center;
     }
 
-    .size-options select {
-      width: 40%;
-      padding: 9px;
+    .size-options select,
+    .size-options input[type="number"] {
+      padding: 8px;
       border: 1px solid #ddd;
       border-radius: 6px;
-      font-size: 14px;
-      background-color: #fff;
+      font-size: 13px;
       box-sizing: border-box;
+    }
+
+    .size-options select {
+      width: 40%;
     }
 
     .size-options input[type="number"] {
       width: 30%;
-      padding: 9px;
-      border: 1px solid #1877f2;
-      border-radius: 6px;
-      font-size: 14px;
       font-weight: bold;
       color: #1877f2;
       background-color: #eef3fb;
-      box-sizing: border-box;
       text-align: center;
     }
 
     .resize-mode {
-      margin-bottom: 10px;
-      font-size: 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
       color: #333;
-      user-select: none;
     }
 
     .resize-mode label {
-      margin-right: 15px;
+      margin-right: 10px;
       cursor: pointer;
     }
 
     button {
-      display: block;
-      margin: 8px auto 0;
-      padding: 10px 20px;
+      margin: 6px auto 0;
+      padding: 10px 16px;
       background-color: #1877f2;
       color: white;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(24, 119, 242, 0.3);
-      transition: background-color 0.3s ease;
       width: 100%;
-      max-width: 320px;
+      max-width: 300px;
     }
 
     button:hover {
@@ -192,25 +183,25 @@
     }
 
     .info-box {
-  font-size: 13px;
-  background: #f9f9f9;
-  padding: 6px 10px;
-  border-left: 4px solid #1877f2;
-  margin-top: 8px;
-  border-radius: 4px;
-  line-height: 1.4;
-  white-space: pre-line;
-}
+      font-size: 12.5px;
+      background: #f9f9f9;
+      padding: 4px 8px;
+      border-left: 3px solid #1877f2;
+      margin-top: 6px;
+      border-radius: 4px;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
 
     .info-box.resized {
       border-color: #2ea51e;
     }
 
-.info-title {
-  font-weight: bold;
-  margin-bottom: 0px;
-  color: #333;
-}
+    .info-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+      font-size: 12.5px;
+    }
 
     canvas {
       display: none;
@@ -220,8 +211,6 @@
 <body>
   <h1>🖼 Image Resizer</h1>
   <div class="container">
-
-    <!-- Preview ảnh gốc & ảnh dự kiến -->
     <div class="preview-box">
       <div class="preview-frame original" id="frame-original">
         <label>Ảnh gốc</label>
@@ -229,33 +218,32 @@
         <span id="text-original">Chưa có ảnh</span>
       </div>
       <div class="preview-frame preview" id="frame-preview">
-        <label>Ảnh dự kiến</label>
+        <label>Ảnh mới</label>
         <img id="img-preview" alt="Ảnh dự kiến" />
         <span id="text-preview">Chưa có ảnh</span>
       </div>
     </div>
 
-    <!-- Controls -->
     <div class="controls">
       <div class="file-upload">
-        <label for="upload" class="custom-upload-button" role="button" tabindex="0">📂 Chọn ảnh</label>
+        <label for="upload" class="custom-upload-button">📂 Chọn ảnh</label>
         <span id="file-name">Chưa có ảnh</span>
         <input type="file" id="upload" accept="image/*" />
       </div>
 
       <div class="size-options">
-        <select id="size-select" aria-label="Chọn kích thước">
+        <select id="size-select">
           <option value="750x750">750x750</option>
           <option value="540x300">540x300</option>
           <option value="custom">Tùy chỉnh</option>
         </select>
-        <input type="number" id="custom-width" placeholder="Width" readonly aria-label="Chiều rộng" />
-        <input type="number" id="custom-height" placeholder="Height" readonly aria-label="Chiều cao" />
+        <input type="number" id="custom-width" placeholder="Width" readonly />
+        <input type="number" id="custom-height" placeholder="Height" readonly />
       </div>
 
-      <div class="resize-mode" aria-label="Chọn cách resize">
-        <label><input type="radio" name="resizeMode" value="stretch" checked /> Resize đầy đủ (bóp méo)</label>
-        <label><input type="radio" name="resizeMode" value="crop" /> Resize giữ tỉ lệ + crop</label>
+      <div class="resize-mode">
+        <label><input type="radio" name="resizeMode" value="stretch" checked /> Đầy đủ (bóp méo)</label>
+        <label><input type="radio" name="resizeMode" value="crop" /> Giữ tỉ lệ + crop</label>
       </div>
 
       <button onclick="resizeImage()">Resize & Download</button>
@@ -274,247 +262,181 @@
 
   <canvas id="canvas"></canvas>
 
-<script>
-  let originalFile;
-  let originalImage = new Image();
+  <script>
+    let originalFile;
+    let originalImage = new Image();
 
-  const sizeSelect = document.getElementById('size-select');
-  const widthInput = document.getElementById('custom-width');
-  const heightInput = document.getElementById('custom-height');
+    const sizeSelect = document.getElementById('size-select');
+    const widthInput = document.getElementById('custom-width');
+    const heightInput = document.getElementById('custom-height');
+    const fileInput = document.getElementById('upload');
+    const fileNameDisplay = document.getElementById('file-name');
+    const imgOriginal = document.getElementById('img-original');
+    const imgPreview = document.getElementById('img-preview');
+    const textOriginal = document.getElementById('text-original');
+    const textPreview = document.getElementById('text-preview');
+    const originalInfo = document.getElementById('original-info');
+    const resizedInfo = document.getElementById('resized-info');
+    const infoOriginalBox = document.getElementById('info-original');
+    const infoResizedBox = document.getElementById('info-resized');
 
-  const fileInput = document.getElementById('upload');
-  const fileNameDisplay = document.getElementById('file-name');
+    const presets = {
+      "750x750": [750, 750],
+      "540x300": [540, 300]
+    };
 
-  const imgOriginal = document.getElementById('img-original');
-  const imgPreview = document.getElementById('img-preview');
+    function showOriginalImage(show) {
+      imgOriginal.style.display = show ? "block" : "none";
+      textOriginal.style.display = show ? "none" : "block";
+    }
 
-  const textOriginal = document.getElementById('text-original');
-  const textPreview = document.getElementById('text-preview');
+    function showPreviewImage(show) {
+      imgPreview.style.display = show ? "block" : "none";
+      textPreview.style.display = show ? "none" : "block";
+    }
 
-  const originalInfo = document.getElementById('original-info');
-  const resizedInfo = document.getElementById('resized-info');
-
-  const infoOriginalBox = document.getElementById('info-original');
-  const infoResizedBox = document.getElementById('info-resized');
-
-  const presets = {
-    "750x750": [750, 750],
-    "540x300": [540, 300]
-  };
-
-  function showOriginalImage(show) {
-    imgOriginal.style.display = show ? "block" : "none";
-    textOriginal.style.display = show ? "none" : "block";
-  }
-
-  function showPreviewImage(show) {
-    imgPreview.style.display = show ? "block" : "none";
-    textPreview.style.display = show ? "none" : "block";
-  }
-
-  sizeSelect.addEventListener('change', () => {
-    const value = sizeSelect.value;
-    if (value === "custom") {
-      widthInput.readOnly = false;
-      heightInput.readOnly = false;
-      if (originalImage.src) {
-        widthInput.value = originalImage.width;
-        heightInput.value = originalImage.height;
-      } else {
+    sizeSelect.addEventListener('change', () => {
+      const value = sizeSelect.value;
+      if (value === "custom") {
+        widthInput.readOnly = false;
+        heightInput.readOnly = false;
         widthInput.value = "";
         heightInput.value = "";
+      } else {
+        const [w, h] = presets[value];
+        widthInput.value = w;
+        heightInput.value = h;
+        widthInput.readOnly = true;
+        heightInput.readOnly = true;
       }
-    } else {
-      const [w, h] = presets[value];
-      widthInput.value = w;
-      heightInput.value = h;
-      widthInput.readOnly = true;
-      heightInput.readOnly = true;
-    }
-    updatePreviewImage();
-  });
+      updatePreviewImage();
+    });
 
-  fileInput.addEventListener("change", function() {
-    if (this.files[0]) {
-      originalFile = this.files[0];
-      fileNameDisplay.textContent = originalFile.name;
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        originalImage.onload = () => {
-          imgOriginal.onerror = () => {
-            showOriginalImage(false);
-            originalInfo.textContent = "";
-            infoOriginalBox.style.display = "none";
+    fileInput.addEventListener("change", function() {
+      if (this.files[0]) {
+        originalFile = this.files[0];
+        fileNameDisplay.textContent = originalFile.name;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          originalImage.onload = () => {
+            imgOriginal.src = originalImage.src;
+            showOriginalImage(true);
+            infoOriginalBox.style.display = "block";
+            originalInfo.textContent = 
+              `Tên: ${originalFile.name} | ${originalImage.width}x${originalImage.height}px | ${(originalFile.size / 1024).toFixed(1)} KB`;
+            updatePreviewImage();
           };
-
-          imgOriginal.src = originalImage.src;
-          showOriginalImage(true);
-
-          infoOriginalBox.style.display = "block";
-          originalInfo.textContent = 
-            `Tên: ${originalFile.name}\n` +
-            `Kích thước gốc: ${originalImage.width}x${originalImage.height}px\n` +
-            `Dung lượng: ${(originalFile.size / 1024).toFixed(1)} KB`;
-
-          sizeSelect.dispatchEvent(new Event('change'));
+          originalImage.onerror = () => {
+            alert("Ảnh không hợp lệ.");
+            originalFile = null;
+            imgOriginal.src = "";
+            imgPreview.src = "";
+            fileNameDisplay.textContent = "Chưa có ảnh";
+            showOriginalImage(false);
+            showPreviewImage(false);
+            infoOriginalBox.style.display = "none";
+            infoResizedBox.style.display = "none";
+          };
+          originalImage.src = event.target.result;
         };
-        originalImage.onerror = () => {
-          alert("Ảnh không hợp lệ hoặc không thể tải.");
-          originalFile = null;
-          fileNameDisplay.textContent = "Chưa có ảnh";
-          imgOriginal.src = "";
-          imgPreview.src = "";
-          showOriginalImage(false);
-          showPreviewImage(false);
-          infoOriginalBox.style.display = "none";
-          infoResizedBox.style.display = "none";
-        };
-        originalImage.src = event.target.result;
-      };
-      reader.readAsDataURL(originalFile);
-    } else {
-      fileNameDisplay.textContent = "Chưa có ảnh";
-      imgOriginal.src = "";
-      imgPreview.src = "";
-      showOriginalImage(false);
-      showPreviewImage(false);
-      infoOriginalBox.style.display = "none";
-      infoResizedBox.style.display = "none";
-    }
-  });
+        reader.readAsDataURL(originalFile);
+      }
+    });
 
-  widthInput.addEventListener("input", updatePreviewImage);
-  heightInput.addEventListener("input", updatePreviewImage);
+    widthInput.addEventListener("input", updatePreviewImage);
+    heightInput.addEventListener("input", updatePreviewImage);
 
-  function updatePreviewImage() {
-    if (!originalImage.src) {
-      showPreviewImage(false);
-      infoResizedBox.style.display = "none";
-      return;
-    }
+    function updatePreviewImage() {
+      if (!originalImage.src) return;
 
-    const width = parseInt(widthInput.value);
-    const height = parseInt(heightInput.value);
-    if (!width || !height) {
-      showPreviewImage(false);
-      infoResizedBox.style.display = "none";
-      return;
-    }
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      if (!width || !height) return;
 
-    const mode = document.querySelector('input[name="resizeMode"]:checked').value;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
 
-    if (mode === "stretch") {
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(originalImage, 0, 0, width, height);
-    } else {
-      const ratioW = width / originalImage.width;
-      const ratioH = height / originalImage.height;
-      const scale = Math.max(ratioW, ratioH);
+      if (mode === "stretch") {
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, 0, 0, width, height);
+      } else {
+        const scale = Math.max(width / originalImage.width, height / originalImage.height);
+        const sx = (originalImage.width * scale - width) / 2 / scale;
+        const sy = (originalImage.height * scale - height) / 2 / scale;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+      }
 
-      const scaledW = originalImage.width * scale;
-      const scaledH = originalImage.height * scale;
-
-      canvas.width = width;
-      canvas.height = height;
-
-      const sx = (scaledW - width) / 2 / scale;
-      const sy = (scaledH - height) / 2 / scale;
-
-      ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
-    }
-
-canvas.toBlob(function(blob) {
-  const originalName = originalFile?.name || "preview";
-  const baseName = originalName.replace(/\.[^/.]+$/, "");
-  const resizedName = `${baseName}_${width}x${height}.jpeg`;
-
-  resizedInfo.textContent =
-    `Tên: ${resizedName}\n` +
-    `Kích thước mới: ${width}x${height}px\n` +
-    `Dung lượng ước tính: ${(blob.size / 1024).toFixed(1)} KB`;
-  infoResizedBox.style.display = "block";
-
-  imgPreview.src = URL.createObjectURL(blob);
-  showPreviewImage(true);
-}, 'image/jpeg', 0.92);
-  }
-
-  function resizeImage() {
-    if (!originalFile) return alert("Hãy chọn một ảnh.");
-
-    const width = parseInt(widthInput.value);
-    const height = parseInt(heightInput.value);
-    if (!width || !height) return alert("Nhập kích thước hợp lệ.");
-
-    const mode = document.querySelector('input[name="resizeMode"]:checked').value;
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-    if (mode === "stretch") {
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(originalImage, 0, 0, width, height);
-      compressAndDownload(canvas, width, height);
-    } else {
-      const ratioW = width / originalImage.width;
-      const ratioH = height / originalImage.height;
-      const scale = Math.max(ratioW, ratioH);
-
-      const scaledW = originalImage.width * scale;
-      const scaledH = originalImage.height * scale;
-
-      canvas.width = width;
-      canvas.height = height;
-
-      const sx = (scaledW - width) / 2 / scale;
-      const sy = (scaledH - height) / 2 / scale;
-
-      ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
-      compressAndDownload(canvas, width, height);
-    }
-  }
-
-  function compressAndDownload(canvas, width, height) {
-    const originalName = originalFile.name;
-    const baseName = originalName.replace(/\.[^/.]+$/, "");
-    const resizedName = `${baseName}_${width}x${height}.jpeg`;
-
-    let quality = 0.92;
-
-    function tryCompress() {
       canvas.toBlob(function(blob) {
-        if (blob.size <= 500 * 1024 || quality < 0.1) {
-          resizedInfo.textContent = 
-            `Tên: ${resizedName}\n` +
-            `Kích thước mới: ${width}x${height}px\n` +
-            `Dung lượng mới: ${(blob.size / 1024).toFixed(1)} KB`;
-          infoResizedBox.style.display = "block";
-
-          imgPreview.src = URL.createObjectURL(blob);
-          showPreviewImage(true);
-
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = resizedName;
-          a.click();
-        } else {
-          quality -= 0.05;
-          tryCompress();
-        }
-      }, 'image/jpeg', quality);
+        const baseName = (originalFile?.name || "preview").replace(/\.[^/.]+$/, "");
+        const previewName = `${baseName}_${width}x${height}.jpeg`;
+        imgPreview.src = URL.createObjectURL(blob);
+        resizedInfo.textContent = `Tên: ${previewName} | ${width}x${height}px | ${(blob.size / 1024).toFixed(1)} KB`;
+        infoResizedBox.style.display = "block";
+        showPreviewImage(true);
+      }, 'image/jpeg', 0.92);
     }
 
-    tryCompress();
-  }
+    function resizeImage() {
+      if (!originalFile) return alert("Hãy chọn một ảnh.");
+      const width = parseInt(widthInput.value);
+      const height = parseInt(heightInput.value);
+      if (!width || !height) return alert("Kích thước không hợp lệ.");
 
-  // Init
-  sizeSelect.dispatchEvent(new Event('change'));
-  showOriginalImage(false);
-  showPreviewImage(false);
-</script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const mode = document.querySelector('input[name="resizeMode"]:checked').value;
 
+      if (mode === "stretch") {
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, 0, 0, width, height);
+      } else {
+        const scale = Math.max(width / originalImage.width, height / originalImage.height);
+        const sx = (originalImage.width * scale - width) / 2 / scale;
+        const sy = (originalImage.height * scale - height) / 2 / scale;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(originalImage, sx, sy, width / scale, height / scale, 0, 0, width, height);
+      }
+
+      compressAndDownload(canvas, width, height);
+    }
+
+    function compressAndDownload(canvas, width, height) {
+      const originalName = originalFile.name;
+      const baseName = originalName.replace(/\.[^/.]+$/, "");
+      const resizedName = `${baseName}_${width}x${height}.jpeg`;
+
+      let quality = 0.92;
+      function tryCompress() {
+        canvas.toBlob(function(blob) {
+          if (blob.size <= 500 * 1024 || quality < 0.1) {
+            resizedInfo.textContent =
+              `Tên: ${resizedName} | ${width}x${height}px | ${(blob.size / 1024).toFixed(1)} KB`;
+            infoResizedBox.style.display = "block";
+            imgPreview.src = URL.createObjectURL(blob);
+            showPreviewImage(true);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = resizedName;
+            a.click();
+          } else {
+            quality -= 0.05;
+            tryCompress();
+          }
+        }, 'image/jpeg', quality);
+      }
+
+      tryCompress();
+    }
+
+    sizeSelect.dispatchEvent(new Event('change'));
+    showOriginalImage(false);
+    showPreviewImage(false);
+  </script>
 </body>
 </html>
