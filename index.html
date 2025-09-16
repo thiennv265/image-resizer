@@ -245,7 +245,12 @@
         <label><input type="radio" name="resizeMode" value="stretch" checked /> Đầy đủ (bóp méo)</label>
         <label><input type="radio" name="resizeMode" value="crop" /> Giữ tỉ lệ + crop</label>
       </div>
-
+      <div style="margin-bottom: 8px;">
+        <label style="font-size: 13px; color: #333;">Giới hạn dung lượng (KB):</label>
+        <input type="number" id="max-size" placeholder="Mặc định 500" value="500" 
+               style="width: 100px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px;
+               font-size: 13px; margin-left: 6px;" />
+      </div>
       <button onclick="resizeImage()">Resize & Download</button>
 
       <div class="info-box" id="info-original" style="display:none;">
@@ -410,11 +415,16 @@
       const originalName = originalFile.name;
       const baseName = originalName.replace(/\.[^/.]+$/, "");
       const resizedName = `${baseName}_${width}x${height}.jpeg`;
-
+    
+      const maxSizeInput = document.getElementById("max-size");
+      const maxSizeKB = parseInt(maxSizeInput.value) || 500; // fallback to 500KB
+      const maxSizeBytes = maxSizeKB * 1024;
+    
       let quality = 0.92;
+    
       function tryCompress() {
         canvas.toBlob(function(blob) {
-          if (blob.size <= 500 * 1024 || quality < 0.1) {
+          if (blob.size <= maxSizeBytes || quality < 0.1) {
             resizedInfo.textContent =
               `Tên: ${resizedName} | ${width}x${height}px | ${(blob.size / 1024).toFixed(1)} KB`;
             infoResizedBox.style.display = "block";
@@ -430,7 +440,7 @@
           }
         }, 'image/jpeg', quality);
       }
-
+    
       tryCompress();
     }
 
