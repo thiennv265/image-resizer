@@ -351,6 +351,12 @@
     widthInput.addEventListener("input", updatePreviewImage);
     heightInput.addEventListener("input", updatePreviewImage);
 
+    function canvasToBlobAsync(canvas, quality) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+      });
+    }
+    
     function updatePreviewImage() {
       if (!originalImage.src) return;
 
@@ -385,7 +391,7 @@
       }, 'image/jpeg', 0.92);
     }
 
-    function resizeImage() {
+    async function resizeImage() {
       if (!originalFile) return alert("Hãy chọn một ảnh.");
       const width = parseInt(widthInput.value);
       const height = parseInt(heightInput.value);
@@ -411,62 +417,53 @@
       compressAndDownload(canvas, width, height);
     }
 
-function compressAndDownload(canvas, width, height) {
+async function compressAndDownload(canvas, width, height) {
   const originalName = originalFile.name;
   const baseName = originalName.replace(/\.[^/.]+$/, "");
   const resizedName = `${baseName}_${width}x${height}.jpeg`;
 
   const maxSizeInput = document.getElementById("max-size");
-  const maxSizeKB = parseInt(maxSizeInput.value) || 500; // fallback to 500KB
+  const maxSizeKB = parseInt(maxSizeInput.value) || 500;
   const maxSizeBytes = maxSizeKB * 1024;
 
   const qualities = [];
-  for (let q = 0.1; q <= 0.95; q += 0.05) {
+  for (let q = 0.95; q >= 0.1; q -= 0.02) {
     qualities.push(parseFloat(q.toFixed(2)));
   }
-  qualities.reverse(); // Thử từ chất lượng cao xuống thấp
 
   let bestBlob = null;
   let bestQuality = 0;
 
-  let i = 0;
+  for (const q of qualities) {
+    const blob = await canvasToBlobAsync(canvas, q);
+    if (blob.size <= maxSizeBytes) {
+      if (!bestBlob || blob.size > bestBlob.size) {
+        bestBlob = blob;
+        bestQuality = q;
 
-  function tryNext() {
-    if (i >= qualities.length) {
-      if (bestBlob) {
-        // Dùng blob tốt nhất đã tìm được
-        resizedInfo.textContent =
-          `Tên: ${resizedName} | ${width}x${height}px | ${(bestBlob.size / 1024).toFixed(1)} KB (q=${bestQuality})`;
-        infoResizedBox.style.display = "block";
-        imgPreview.src = URL.createObjectURL(bestBlob);
-        showPreviewImage(true);
-
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(bestBlob);
-        a.download = resizedName;
-        a.click();
-      } else {
-        alert(`Không thể nén ảnh xuống dưới ${maxSizeKB}KB ở bất kỳ chất lượng nào.`);
+        // ✅ Nếu ảnh đã gần sát 490–500KB thì dừng luôn, tránh mất thời gian
+        if (blob.size >= maxSizeBytes * 0.97) break;
       }
-      return;
     }
-
-    const quality = qualities[i];
-    i++;
-
-    canvas.toBlob(function(blob) {
-      if (blob.size <= maxSizeBytes) {
-        // Lưu blob tốt nhất nếu đạt yêu cầu
-        if (!bestBlob || blob.size > bestBlob.size) {
-          bestBlob = blob;
-          bestQuality = quality;
-        }
-      }
-      tryNext();
-    }, 'image/jpeg', quality);
   }
 
-  tryNext();
+  if (!bestBlob) {
+    alert(`Không thể nén ảnh xuống dưới ${maxSizeKB}KB ở bất kỳ chất lượng nào.`);
+    return;
+  }
+
+  // ✅ Update preview
+  resizedInfo.textContent =
+    `Tên: ${resizedName} | ${width}x${height}px | ${(bestBlob.size / 1024).toFixed(1)} KB (q=${bestQuality})`;
+  infoResizedBox.style.display = "block";
+  imgPreview.src = URL.createObjectURL(bestBlob);
+  showPreviewImage(true);
+
+  // ✅ Trigger download
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(bestBlob);
+  a.download = resizedName;
+  a.click();
 }
 
     sizeSelect.dispatchEvent(new Event('change'));
