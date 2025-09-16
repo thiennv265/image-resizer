@@ -411,38 +411,63 @@
       compressAndDownload(canvas, width, height);
     }
 
-    function compressAndDownload(canvas, width, height) {
-      const originalName = originalFile.name;
-      const baseName = originalName.replace(/\.[^/.]+$/, "");
-      const resizedName = `${baseName}_${width}x${height}.jpeg`;
-    
-      const maxSizeInput = document.getElementById("max-size");
-      const maxSizeKB = parseInt(maxSizeInput.value) || 500; // fallback to 500KB
-      const maxSizeBytes = maxSizeKB * 1024;
-    
-      let quality = 0.92;
-    
-      function tryCompress() {
-        canvas.toBlob(function(blob) {
-          if (blob.size <= maxSizeBytes || quality < 0.1) {
-            resizedInfo.textContent =
-              `Tên: ${resizedName} | ${width}x${height}px | ${(blob.size / 1024).toFixed(1)} KB`;
-            infoResizedBox.style.display = "block";
-            imgPreview.src = URL.createObjectURL(blob);
-            showPreviewImage(true);
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = resizedName;
-            a.click();
-          } else {
-            quality -= 0.05;
-            tryCompress();
-          }
-        }, 'image/jpeg', quality);
+function compressAndDownload(canvas, width, height) {
+  const originalName = originalFile.name;
+  const baseName = originalName.replace(/\.[^/.]+$/, "");
+  const resizedName = `${baseName}_${width}x${height}.jpeg`;
+
+  const maxSizeInput = document.getElementById("max-size");
+  const maxSizeKB = parseInt(maxSizeInput.value) || 500; // fallback to 500KB
+  const maxSizeBytes = maxSizeKB * 1024;
+
+  const qualities = [];
+  for (let q = 0.1; q <= 0.95; q += 0.05) {
+    qualities.push(parseFloat(q.toFixed(2)));
+  }
+  qualities.reverse(); // Thử từ chất lượng cao xuống thấp
+
+  let bestBlob = null;
+  let bestQuality = 0;
+
+  let i = 0;
+
+  function tryNext() {
+    if (i >= qualities.length) {
+      if (bestBlob) {
+        // Dùng blob tốt nhất đã tìm được
+        resizedInfo.textContent =
+          `Tên: ${resizedName} | ${width}x${height}px | ${(bestBlob.size / 1024).toFixed(1)} KB (q=${bestQuality})`;
+        infoResizedBox.style.display = "block";
+        imgPreview.src = URL.createObjectURL(bestBlob);
+        showPreviewImage(true);
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(bestBlob);
+        a.download = resizedName;
+        a.click();
+      } else {
+        alert(`Không thể nén ảnh xuống dưới ${maxSizeKB}KB ở bất kỳ chất lượng nào.`);
       }
-    
-      tryCompress();
+      return;
     }
+
+    const quality = qualities[i];
+    i++;
+
+    canvas.toBlob(function(blob) {
+      if (blob.size <= maxSizeBytes) {
+        // Lưu blob tốt nhất nếu đạt yêu cầu
+        if (!bestBlob || blob.size > bestBlob.size) {
+          bestBlob = blob;
+          bestQuality = quality;
+        }
+      }
+      tryNext();
+    }, 'image/jpeg', quality);
+  }
+
+  tryNext();
+}
 
     sizeSelect.dispatchEvent(new Event('change'));
     showOriginalImage(false);
